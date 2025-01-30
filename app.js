@@ -53,6 +53,14 @@ function displayMovie(movie) {
   guessBox.type = 'text';
   guessBox.id = "guessBox";
 
+  guessBox.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevent form submission (if inside a form)
+      const guess = guessBox.value;
+      checkGuess(guess, movieYear);
+    }
+  });
+
   const submitGuessButton = document.createElement('button');
   submitGuessButton.textContent = 'Guess';
   submitGuessButton.title = 'Guess';
