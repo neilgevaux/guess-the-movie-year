@@ -89,6 +89,13 @@ function displayMovie(movie) {
   movieInfoDiv.appendChild(title);
   movieInfoDiv.appendChild(guessBox);
   movieInfoDiv.appendChild(submitGuessButton);
+
+  const nextMovieButton = document.createElement('button');
+  nextMovieButton.textContent = 'Next Movie';
+  nextMovieButton.id = 'next-movie'
+  nextMovieButton.addEventListener('click', getMovie);
+
+  movieInfoDiv.appendChild(nextMovieButton); 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
