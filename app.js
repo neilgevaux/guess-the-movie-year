@@ -1,45 +1,64 @@
 const movieId = '';
 
-function getMovie() {
+async function getMovie() {
   const apiKey = config.apiKey; 
   const imdbID = 'tt0076759'; 
-  const url = `https://www.omdbapi.com/?apikey=${apiKey}&i=${imdbID}`;
+  // const url = `https://www.omdbapi.com/?apikey=${apiKey}&i=${imdbID}`;
+  const apiUrl = `https://www.omdbapi.com/?apikey=${apiKey}&s=movie&type=movie`; // Search for movies
 
-  fetch(url)
-  .then(response => response.json())
-  .then(movieData => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error status ${response.status}`);
+    }
+    const movieData = await response.json();
     console.log(movieData);
-    displayMovie(movieData); 
-  });
+    displayMovie(movieData);
+  } catch (error) {
+    console.error("Error fetching movie data:", error);
+    const movieInfoDiv = document.getElementById('movie-info');
+    movieInfoDiv.textContent = "Error fetching movie data. Please try again later."
+  }
 }
 
 function displayMovie(movie) {
   const movieInfoDiv = document.getElementById('movie-info');
+  movieInfoDiv.innerHTML = "";
 
   const title = document.createElement('h3');
   title.textContent = movie.Title;
 
-  const year = movie.Year;
-  console.log(`Year: ${year}`)
+  const movieYear = movie.Year;
+  console.log(`Year: ${movieYear}`)
 
   const guessBox = document.createElement('input');
+  guessBox.type = 'text';
+  guessBox.id = "guessBox";
+
   const submitGuessButton = document.createElement('button');
   submitGuessButton.textContent = 'Guess';
   submitGuessButton.title = 'Guess';
-  submitGuessButton.addEventListener('click', retrieveGuess);
 
-  function retrieveGuess() {
+  submitGuessButton.addEventListener('click', () => {
     const guess = guessBox.value;
-    console.log(guess);
-  }
+    checkGuess(guess, movieYear);
+  });
 
-  function checkGuess() {
-    const userGuess = guessBox.value;
-    console.log(userGuess);
-    return userGuess;
+  function checkGuess(guess, correctYear) {
+    let message;
+
+    if (guess === correctYear) {
+      message = `Your guess of ${guess} was correct!`
+    } else {
+      message = `Unlucky - the correct year was ${correctYear}`
+    }
+
+    console.log(message);
+    const resultMessage = document.createElement('p');
+    resultMessage.textContent = message;
+    movieInfoDiv.appendChild(resultMessage);
+    guessBox.value = ""
   }
-  
-  checkGuess();
 
   movieInfoDiv.appendChild(title);
   movieInfoDiv.appendChild(guessBox);
