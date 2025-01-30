@@ -2,21 +2,38 @@ const movieId = '';
 
 async function getMovie() {
   const apiKey = config.apiKey; 
-  const imdbID = 'tt0076759'; 
-  // const url = `https://www.omdbapi.com/?apikey=${apiKey}&i=${imdbID}`;
   const apiUrl = `https://www.omdbapi.com/?apikey=${apiKey}&s=movie&type=movie`; // Search for movies
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(apiUrl);
     if (!response.ok) {
-      throw new Error(`HTTP error status ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
     }
-    const movieData = await response.json();
-    console.log(movieData);
+
+    const searchData = await response.json();
+
+    if (!searchData.Search || searchData.Search.length === 0) {
+        throw new Error("No movies found in search results.");
+    }
+
+    const randomIndex = Math.floor(Math.random() * searchData.Search.length);
+    const randomMovieId = searchData.Search[randomIndex].imdbID;
+
+    const movieDetailsUrl = `https://www.omdbapi.com/?apikey=${apiKey}&i=${randomMovieId}`;
+    const movieDetailsResponse = await fetch(movieDetailsUrl);
+    if (!movieDetailsResponse.ok) {
+        throw new Error(`HTTP error! status: ${movieDetailsResponse.status} - ${movieDetailsResponse.statusText}`);
+    }
+
+    const movieData = await movieDetailsResponse.json();
+
     displayMovie(movieData);
+
   } catch (error) {
     console.error("Error fetching movie data:", error);
+
     const movieInfoDiv = document.getElementById('movie-info');
+
     movieInfoDiv.textContent = "Error fetching movie data. Please try again later."
   }
 }
@@ -64,3 +81,7 @@ function displayMovie(movie) {
   movieInfoDiv.appendChild(guessBox);
   movieInfoDiv.appendChild(submitGuessButton);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  getMovie();
+})
