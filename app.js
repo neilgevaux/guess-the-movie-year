@@ -1,41 +1,42 @@
-const movieId = '';
+const apiKey = config.apiKey; 
 
 async function getMovie() {
-  const apiKey = config.apiKey; 
-  const apiUrl = `https://www.omdbapi.com/?apikey=${apiKey}&s=movie&type=movie`; // Search for movies
 
+  const apiUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=${Math.floor(Math.random() * 500) + 1}&with_watch_monetization_types=flatrate`; // Example query
+  
   try {
     const response = await fetch(apiUrl);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
     }
 
-    const searchData = await response.json();
+    const data = await response.json();
 
-    if (!searchData.Search || searchData.Search.length === 0) {
-        throw new Error("No movies found in search results.");
+    if (!data.results || data.results.length === 0) {
+        throw new Error("No movies found.");
     }
 
-    const randomIndex = Math.floor(Math.random() * searchData.Search.length);
-    const randomMovieId = searchData.Search[randomIndex].imdbID;
-
-    const movieDetailsUrl = `https://www.omdbapi.com/?apikey=${apiKey}&i=${randomMovieId}`;
-    const movieDetailsResponse = await fetch(movieDetailsUrl);
-    if (!movieDetailsResponse.ok) {
-        throw new Error(`HTTP error! status: ${movieDetailsResponse.status} - ${movieDetailsResponse.statusText}`);
-    }
-
-    const movieData = await movieDetailsResponse.json();
-
-    displayMovie(movieData);
+    const randomIndex = Math.floor(Math.random() * data.results.length);
+    const randomMovie = data.results[randomIndex];
+    getMovieDetails(randomMovie.id);
 
   } catch (error) {
-    console.error("Error fetching movie data:", error);
-
-    const movieInfoDiv = document.getElementById('movie-info');
-
-    movieInfoDiv.textContent = "Error fetching movie data. Please try again later."
+      console.error("Error fetching movie data:", error);
+      const movieInfoDiv = document.getElementById('movie-info');
+      if (movieInfoDiv) {
+          movieInfoDiv.textContent = "Error fetching movie data. Please try again later.";
+      } else {
+          console.error("movie-info element not found!");
+      }
   }
+}
+
+async function getMovieDetails(movieId) {
+  const detailsUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=en-US`;
+
+  const response = await fetch(detailsUrl);
+  const movieDetails = await response.json();
+  displayMovie(movieDetails);
 }
 
 function displayMovie(movie) {
@@ -43,10 +44,10 @@ function displayMovie(movie) {
   movieInfoDiv.innerHTML = "";
 
   const title = document.createElement('h3');
-  title.textContent = movie.Title;
+  title.textContent = movie.title;
 
-  const movieYear = movie.Year;
-  console.log(`Year: ${movieYear}`)
+  const movieYear = movie.release_date? movie.release_date.substring(0, 4): "Year not available"; 
+  console.log(`Year: ${movieYear}`);
 
   const guessBox = document.createElement('input');
   guessBox.type = 'text';
